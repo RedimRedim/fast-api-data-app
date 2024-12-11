@@ -1,0 +1,5 @@
+Station_Name,Shinkansen_Line,Year,Prefecture,Distance From Tokyo,company
+Tokyo,Tokaido_Shinkansen,1964,Tokyo,0.0,JR_Central
+Shinagawa,Tokaido_Shinkansen,2003,Tokyo,6.8,JR_Central
+Tokyo,Tohoku_Shinkansen,1991,Tokyo,0.0,JR_East
+Ueno,Tohoku_Shinkansen,1985,Tokyo,3.6,JR_East
