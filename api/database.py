@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import os
 from urllib.parse import quote_plus
 
+
 load_dotenv()
 
 DB_HOST = os.getenv(
@@ -23,3 +24,11 @@ SQLALCHEMY_DATABASE_URL = (
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base: DeclarativeMeta = declarative_base()
+
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

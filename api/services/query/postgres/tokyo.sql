@@ -1,0 +1,1 @@
+SELECT * FROM "test"."shinkansen_station" WHERE "Prefecture" = 'Tokyo' 

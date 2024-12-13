@@ -12,6 +12,7 @@ class User(Base):
     id = Column(Integer, primary_key=True, autoincrement=True, index=True)
     username = Column(String, unique=True, index=True)
     hashed_password = Column(String)
+    role = Column(String, default="A")
 
 
 # Pydantic models for input and output validation

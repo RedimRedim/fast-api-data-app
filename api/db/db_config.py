@@ -1,4 +1,4 @@
-import psycopg2
+import asyncpg
 import pandas as pd
 from pandas import DataFrame
 import os
@@ -12,53 +12,88 @@ load_dotenv()
 
 
 class DatabaseConnection:
-    def __init__(self, host, database, user, password, port) -> None:
-        self.host = host
-        self.database = database
-        self.user = user
-        self.password = password
-        self.port = port
-        self.connection = None
-        self.cursor = None
-        self.data_path = os.path.join(os.path.dirname(__file__), "../data")
-        # Initialize connection
-        self.initialize()
 
-    def initialize(self):
-        if self.connection is None:
+    def __init__(self) -> None:
+        self.host = os.getenv("DB_HOST")
+        self.database = os.getenv("DB_DATABASE")
+        self.user = os.getenv("DB_USER")
+        self.password = os.getenv("DB_PASSWORD")
+        self.port = int(os.getenv("DB_PORT"))
+        self._pool = None
+        self.data_path = os.path.join(os.path.dirname(__file__), "../data")
+
+    async def initialize(self) -> None:
+        if self._pool is None:
             try:
-                self.connection = psycopg2.connect(
+                self._pool = await asyncpg.create_pool(
                     host=self.host,
                     database=self.database,
                     user=self.user,
                     password=self.password,
                     port=self.port,
+                    min_size=1,
+                    max_size=5,
                 )
-                self.cursor = self.connection.cursor()
-                print("Connected to database")
-            except (Exception, psycopg2.DatabaseError) as error:
+                print("Connected to Postgresql database")
+            except (Exception, asyncpg.PostgresError) as error:
                 print(f"Error connecting to PostgreSQL database: {error}")
+                raise error
 
-    def execute_and_save_query(self, query, filename) -> None:
-        try:
-            self.cursor.execute(query)
-            result = self.cursor.fetchall()
-            columns = [desc[0] for desc in self.cursor.description]  # Get column names
-            result_df = pd.DataFrame(result, columns=columns)
+    async def execute_and_save_query(self, query, filename) -> None:
+        """Execute the given query and save the result to a CSV file"""
+        await self.initialize()
 
-            # Save DataFrame to CSV file
-            DataFrameUtils.save_to_csv(result_df, self.data_path, filename)
-            logging.info(f"DataFrame saved to CSV file {self.data_path}")
-        except (Exception, psycopg2.DatabaseError) as error:
-            self.cursor.connection.rollback()
-            print(f"Error executing query: {error}, Connection error")
-            raise error
+        async with self.pool.acquire() as connection:
+            try:
+                print("Executing query")
+                result = await connection.fetch(query)
+                if result:
+                    columns = list(result[0].keys())  # Get column names
+                    result_df = pd.DataFrame(result, columns=columns)
+
+                    # Save DataFrame to CSV file
+                    DataFrameUtils.save_to_csv(result_df, self.data_path, filename)
+                    logging.info(f"DataFrame saved to CSV file {self.data_path}")
+            except (Exception, asyncpg.PostgresError) as error:
+                print(f"Error executing query: {error}, Connection error")
+                raise error
+
+    async def execute_query_path(self, filename):
+        await self.initialize()
+
+        query_path = os.path.join(
+            os.path.dirname(__file__), f"../services/query/postgres/{filename}.sql"
+        )
+
+        if not os.path.exists(query_path):
+            raise FileNotFoundError("Query path does not exist")
+
+        with open(query_path, "r") as file:
+            query = file.read()
+
+        async with self._pool.acquire() as connection:
+            try:
+                print("Executing query")
+                result = await connection.fetch(query)
+                if result:
+                    columns = list(result[0].keys())  # Get column names
+                    result_df = pd.DataFrame(result, columns=columns)
+
+                    # Save DataFrame to CSV file
+                    DataFrameUtils.save_to_csv(result_df, self.data_path, filename)
+                    logging.info(f"DataFrame saved to CSV file {self.data_path}")
+            except (Exception, asyncpg.PostgresError) as error:
+                print(f"Error executing query: {error}, Connection error")
+                raise error
 
     async def close(self):
         """Close the database connection and cursor"""
-        if self.cursor:
-            self.cursor.close()
-        if self.connection:
-            self.connection.close()
-        self.cursor = None
-        self.connection = None
+        try:
+            if self._pool:
+                await self._pool.close()
+        except Exception as error:
+            print(f"Error while closing the connection or cursor: {error}")
+            raise error
+
+
+pg_db_instance = DatabaseConnection()

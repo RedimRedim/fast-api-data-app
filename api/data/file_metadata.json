@@ -1,10 +1,44 @@
 [
     {
         "fileName": "Shinkansen_Station",
-        "updatedAt": "2024-12-11 15:11:42"
+        "updatedAt": "2024-12-13 14:09:04",
+        "db": "PG",
+        "role": "A"
     },
     {
         "fileName": "Tokyo",
-        "updatedAt": "2024-12-11 15:03:50"
+        "updatedAt": "2024-12-13 14:08:43",
+        "db": "PG",
+        "role": "A"
+    },
+    {
+        "fileName": "Shinkansen_Station B",
+        "updatedAt": "2024-12-11 20:35:54",
+        "db": "PG",
+        "role": "B"
+    },
+    {
+        "fileName": "Tokyo B",
+        "updatedAt": "2024-12-11 20:35:54",
+        "db": "PG",
+        "role": "B"
+    },
+    {
+        "fileName": "test_mv",
+        "updatedAt": "2024-12-13 14:17:52",
+        "db": "MY",
+        "role": "A"
+    },
+    {
+        "fileName": "test_mv2",
+        "updatedAt": "2024-12-13 14:17:55",
+        "db": "MY",
+        "role": "A"
+    },
+    {
+        "fileName": "test_mv3",
+        "updatedAt": "2024-12-13 14:17:55",
+        "db": "MY",
+        "role": "A"
     }
 ]

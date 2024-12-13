@@ -7,7 +7,6 @@ from models import User, UserCreate, UserLogin, UserResponse, TokenRefreshReques
 from jose import JWTError, jwt
 import uvicorn
 import logging
-from database import SessionLocal, engine
 from utils.auth_utils import (
     hash_password,
     verify_password,
@@ -17,8 +16,10 @@ from utils.auth_utils import (
     SECRET_KEY,
     ALGORITHM,
 )
+from database import get_db
 
 app = FastAPI()
+
 
 origin = ["http://localhost:8080", "http://localhost:5173"]
 
@@ -37,14 +38,6 @@ app.include_router(api_router, prefix="/api", tags=["api"])
 
 ##include business router
 app.include_router(api_router)
-
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 # Protected route that requires a valid access token
