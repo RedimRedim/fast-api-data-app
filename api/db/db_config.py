@@ -33,6 +33,7 @@ class DatabaseConnection:
                     port=self.port,
                     min_size=1,
                     max_size=5,
+                    statement_cache_size=0,  # Disables statement caching
                 )
                 print("Connected to Postgresql database")
             except (Exception, asyncpg.PostgresError) as error:

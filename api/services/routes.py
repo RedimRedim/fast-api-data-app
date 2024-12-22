@@ -22,18 +22,6 @@ class FileUpdateRequest(BaseModel):
 router = APIRouter()
 
 
-@router.get("/mysql/files")
-async def get_files(
-    request: FileUpdateRequest,
-):
-    try:
-        filename = request.filename
-        await ApiLogicInstance.update_mysql(filename=filename)
-        return {"message": f" {filename} finished successfully"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error saving file: {e}")
-
-
 @router.get("/files")
 async def get_files(
     current_user: str = Depends(verify_token), db: Session = Depends(get_db)
